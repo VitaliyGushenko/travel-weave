@@ -26,7 +26,8 @@ export class TripStore {
     if (markClean) {
       this.dirty.set(false);
     }
-    if (trip && this.selectedIndex() !== null && this.selectedIndex() >= trip.waypoints.length) {
+    const sel = this.selectedIndex();
+    if (trip && sel !== null && sel >= trip.waypoints.length) {
       this.selectedIndex.set(trip.waypoints.length ? trip.waypoints.length - 1 : null);
     }
   }
@@ -78,7 +79,8 @@ export class TripStore {
     const waypoints = trip.waypoints.filter((w) => w.id !== id);
     // Сегменты отдаём как есть — reweave сам сопоставит нити парам точек.
     this.commit(trip, waypoints);
-    if (this.selectedIndex() !== null && this.selectedIndex() >= waypoints.length) {
+    const sel = this.selectedIndex();
+    if (sel !== null && sel >= waypoints.length) {
       this.selectedIndex.set(waypoints.length ? waypoints.length - 1 : null);
     }
   }
