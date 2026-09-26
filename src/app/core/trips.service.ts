@@ -7,7 +7,7 @@ import {
   deleteDoc,
   doc,
   docData,
-  orderBy,
+  getDoc,
   query,
   serverTimestamp,
   setDoc,
@@ -22,17 +22,15 @@ export class TripsService {
   private readonly firestore = inject(Firestore);
   private readonly injector = inject(Injector);
 
-  /** Все поездки пользователя, свежие сверху. */
+  /** Поездки пользователя (без сортировки в запросе — сортируем на клиенте). */
   watchUserTrips(uid: string): Observable<Trip[]> {
-    return runInInjectionContext(this.injector, () =>
-      collectionData(
-        query(
-          collection(this.firestore, 'trips'),
-          where('ownerId', '==', uid),
-          orderBy('updatedAt', 'desc'),
-        ),
-        { idField: 'id' },
-      ) as Observable<Trip[]>,
+    return runInInjectionContext(
+      this.injector,
+      () =>
+        collectionData(
+          query(collection(this.firestore, 'trips'), where('ownerId', '==', uid)),
+          { idField: 'id' },
+        ) as Observable<Trip[]>,
     );
   }
 
@@ -40,6 +38,14 @@ export class TripsService {
     return runInInjectionContext(this.injector, () =>
       docData(doc(this.firestore, 'trips', id), { idField: 'id' }),
     ) as Observable<Trip | null>;
+  }
+
+  /** Разовая загрузка без живой подписки — чтобы автосохранение не конфликтовало с редактированием. */
+  async getTripOnce(id: string): Promise<Trip | null> {
+    return runInInjectionContext(this.injector, async () => {
+      const snap = await getDoc(doc(this.firestore, 'trips', id));
+      return snap.exists() ? ({ id: snap.id, ...snap.data() } as Trip) : null;
+    });
   }
 
   async createTrip(uid: string, title: string, currency = 'RUB'): Promise<string> {

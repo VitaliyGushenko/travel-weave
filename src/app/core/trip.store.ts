@@ -36,6 +36,10 @@ export class TripStore {
     this.dirty.set(true);
   }
 
+  markClean(): void {
+    this.dirty.set(false);
+  }
+
   toggleAddMode(on?: boolean): void {
     this.addMode.set(on ?? !this.addMode());
   }

@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Профили пользователей: читает и меняет только владелец.
+    match /users/{uid} {
+      allow read, create, update: if isOwner(uid);
+      allow delete: if false;
+
+      // Нет доступа к чужим подколлекциям профиля.
+      match /{document=**} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    // Поездки: полные права только у владельца маршрута.
+    match /trips/{tripId} {
+      allow read, update, delete: if isSignedIn() && request.auth.uid == resource.data.ownerId;
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.ownerId;
+
+      // Будущие подколлекции (бронирования, документы) — тоже только владельцу.
+      match /{document=**} {
+        allow read, write: if isSignedIn() && request.auth.uid == get(/databases/$(database)/documents/trips/$(tripId)).data.ownerId;
+      }
+    }
+  }
+}

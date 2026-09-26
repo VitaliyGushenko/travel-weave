@@ -5,8 +5,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
-import { TRANSPORT_LABELS, TransportType } from '../core/models';
+import { TRANSPORT_LABELS, TransportType, Waypoint } from '../core/models';
 import { distanceKm } from '../core/geo';
+import { StorageService } from '../core/storage.service';
+import { AuthService } from '../core/auth.service';
 import { TripStore } from '../core/trip.store';
 
 interface GeoResult {
@@ -158,6 +160,19 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
                     (ngModelChange)="patchBudget(wp.id, 'activities', $event)" /></label>
                 </div>
                 <div class="hint">суммы в сутки, {{ store.currency() }}</div>
+                <div class="photo-row">
+                  @if (wp.photo; as photo) {
+                    <img class="photo" [src]="photo.url" alt="{{ wp.name }}" (click)="$event.stopPropagation()" />
+                    <button type="button" class="icon-btn" (click)="removePhoto(wp, $event)" title="Убрать фото">
+                      ✕
+                    </button>
+                  } @else {
+                    <label class="photo-add">
+                      📷 {{ uploading() ? 'Загружаю…' : 'Фото точки' }}
+                      <input type="file" accept="image/*" hidden (change)="onPhoto($event, wp.id)" />
+                    </label>
+                  }
+                </div>
               </div>
             }
           </div>
@@ -346,6 +361,33 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
       font-size: 11px;
       color: var(--text-dim);
     }
+    .photo-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      .photo {
+        width: 100%;
+        height: 110px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid rgba(63, 216, 199, 0.25);
+      }
+      .photo-add {
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+        border: 1px dashed rgba(63, 216, 199, 0.35);
+        border-radius: 10px;
+        color: var(--text-dim);
+        font-size: 12.5px;
+        cursor: pointer;
+        transition: border-color 0.2s, color 0.2s;
+        &:hover {
+          border-color: var(--teal);
+          color: #a9ede2;
+        }
+      }
+    }
     .segment {
       display: flex;
       align-items: center;
@@ -378,12 +420,16 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
 })
 export class RoutePanelComponent {
   readonly store = inject(TripStore);
+  private readonly storage = inject(StorageService);
+  private readonly auth = inject(AuthService);
+
   readonly labels = TRANSPORT_LABELS;
   readonly icons = TRANSPORT_ICONS;
   readonly transportTypes: TransportType[] = ['flight', 'train', 'car', 'cruise', 'walk'];
 
   readonly query = signal('');
   readonly results = signal<GeoResult[]>([]);
+  readonly uploading = signal(false);
   private dragFrom: number | null = null;
   private readonly search$ = new Subject<string>();
 
@@ -456,6 +502,49 @@ export class RoutePanelComponent {
       return 0;
     }
     return distanceKm(a, b);
+  }
+
+  /** Загрузка фото точки: компрессия на canvas → Supabase → ссылка в документ. */
+  async onPhoto(ev: Event, waypointId: string): Promise<void> {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    input.value = '';
+    if (!file) {
+      return;
+    }
+    const uid = this.auth.user()?.uid;
+    const tripId = this.store.trip()?.id;
+    if (!uid || !tripId) {
+      alert('Сначала откройте поездку');
+      return;
+    }
+    if (!this.storage.configured) {
+      alert(
+        'Хранилище файлов ещё не настроено. Добавьте ключи Supabase в src/environments/environment.ts (см. README).',
+      );
+      return;
+    }
+    this.uploading.set(true);
+    try {
+      const blob = await this.storage.compressImage(file, 1400, 0.8);
+      const safeName = file.name.replace(/[^\w.\-]+/g, '_') || 'photo.jpg';
+      const path = `trips/${uid}/${tripId}/photos/${Date.now()}_${safeName}`;
+      const stored = await this.storage.uploadFile(path, blob, 'image/jpeg');
+      this.store.updateWaypoint(waypointId, { photo: stored });
+    } catch (e) {
+      console.error(e);
+      alert('Не удалось загрузить фото');
+    } finally {
+      this.uploading.set(false);
+    }
+  }
+
+  async removePhoto(wp: Waypoint, ev: Event): Promise<void> {
+    ev.stopPropagation();
+    if (wp.photo) {
+      await this.storage.deleteFile(wp.photo.path);
+    }
+    this.store.updateWaypoint(wp.id, { photo: null });
   }
 
   private geocode(q: string): Promise<GeoResult[]> {
