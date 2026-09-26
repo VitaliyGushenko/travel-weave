@@ -21,11 +21,12 @@ interface DayCol {
         <div class="hint">Задайте точкам даты прибытия — и время сплетётся в ленту</div>
       } @else {
         <div class="grid" [style.grid-template-columns]="'repeat(' + days().length + ', 64px)'">
-          <!-- Блоки точек -->
+          <!-- Блоки точек (пересекающиеся даты — в разных рядах) -->
           @for (b of blocks(); track b.index) {
             <div
               class="block"
               [style.grid-column]="(b.start + 1) + ' / ' + (b.end + 2)"
+              [style.grid-row]="b.row + 1"
               [class.selected]="store.selectedIndex() === b.index"
               (click)="store.select(b.index)"
               [title]="b.name"
@@ -37,6 +38,7 @@ interface DayCol {
           @for (d of days(); track d.date; let i = $index) {
             <div
               class="day"
+              [style.grid-row]="dayRow()"
               [class.filled]="d.cost > 0"
               (click)="d.waypointIndex !== null && store.select(d.waypointIndex)"
             >
@@ -61,7 +63,7 @@ interface DayCol {
     }
     .timeline {
       pointer-events: auto;
-      background: var(--bg-panel);
+      background: #fff;
       border: 1px solid var(--border);
       border-radius: 16px;
       box-shadow: 0 6px 28px rgba(20, 50, 80, 0.12);
@@ -80,7 +82,6 @@ interface DayCol {
       row-gap: 6px;
     }
     .block {
-      grid-row: 1;
       background: var(--teal-soft);
       border: 1px solid rgba(14, 148, 136, 0.45);
       color: #0b6b62;
@@ -103,7 +104,6 @@ interface DayCol {
       }
     }
     .day {
-      grid-row: 2;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -172,15 +172,31 @@ export class TimelineComponent {
       return [];
     }
     const dayIndex = new Map(days.map((d, i) => [d.date, i]));
-    const blocks: { index: number; start: number; end: number; name: string }[] = [];
+    const blocks: { index: number; start: number; end: number; name: string; row: number }[] = [];
     trip.waypoints.forEach((wp, index) => {
       if (!wp.arrival) {
         return;
       }
       const start = dayIndex.get(wp.arrival) ?? 0;
       const end = dayIndex.get(wp.departure ?? wp.arrival) ?? start;
-      blocks.push({ index, start, end: Math.max(start, end), name: wp.name });
+      blocks.push({ index, start, end: Math.max(start, end), name: wp.name, row: 0 });
     });
+    // Точки с пересекающимися датами кладём в разные ряды, чтобы блоки не наезжали.
+    blocks.sort((a, b) => a.start - b.start || a.end - b.end);
+    const rowEnds: number[] = [];
+    for (const b of blocks) {
+      let row = rowEnds.findIndex((end) => end < b.start);
+      if (row === -1) {
+        rowEnds.push(b.end);
+        row = rowEnds.length - 1;
+      } else {
+        rowEnds[row] = b.end;
+      }
+      b.row = row;
+    }
     return blocks;
   });
+
+  /** Номер ряда с колонками дней — после всех рядов блоков. */
+  readonly dayRow = computed(() => this.blocks().reduce((max, b) => Math.max(max, b.row), -1) + 2);
 }

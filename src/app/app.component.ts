@@ -76,8 +76,9 @@ import { TripsListComponent } from './ui/trips-list.component';
     }
     .map-hint {
       position: absolute;
-      bottom: 14px;
-      left: 352px;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
       z-index: 9;
       padding: 7px 16px;
       border-radius: 999px;
@@ -88,6 +89,7 @@ import { TripsListComponent } from './ui/trips-list.component';
       font-weight: 600;
       box-shadow: 0 2px 12px rgba(20, 50, 80, 0.1);
       pointer-events: none;
+      white-space: nowrap;
     }
     .save-dot {
       position: absolute;

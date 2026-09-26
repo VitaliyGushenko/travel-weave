@@ -128,6 +128,7 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
                   Прибытие
                   <input
                     type="date"
+                    [max]="wp.departure || null"
                     [ngModel]="wp.arrival"
                     (ngModelChange)="store.updateWaypoint(wp.id, { arrival: $event })"
                   />
@@ -136,6 +137,7 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
                   Отъезд
                   <input
                     type="date"
+                    [min]="wp.arrival || null"
                     [ngModel]="wp.departure"
                     (ngModelChange)="store.updateWaypoint(wp.id, { departure: $event })"
                   />

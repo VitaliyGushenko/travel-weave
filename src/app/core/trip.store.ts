@@ -70,7 +70,17 @@ export class TripStore {
     }
     this.commit(
       trip,
-      trip.waypoints.map((w) => (w.id === id ? { ...w, ...patch } : w)),
+      trip.waypoints.map((w) => {
+        if (w.id !== id) {
+          return w;
+        }
+        const updated = { ...w, ...patch };
+        // Отъезд не может быть раньше прибытия: тянем вторую дату за первой.
+        if (updated.arrival && updated.departure && updated.departure < updated.arrival) {
+          updated.departure = updated.arrival;
+        }
+        return updated;
+      }),
     );
   }
 
