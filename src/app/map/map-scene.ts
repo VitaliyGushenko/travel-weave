@@ -1,6 +1,7 @@
 import * as L from 'leaflet';
 
-import { curvedPath } from '../core/geo';
+import { curvedPath, LatLngTuple } from '../core/geo';
+import { RoutingService } from '../core/routing.service';
 import { TransportType, Waypoint } from '../core/models';
 
 export interface MapSceneHandlers {
@@ -25,18 +26,26 @@ const THREAD_STYLES: Record<TransportType, ThreadStyle> = {
   walk: { color: '#64748b', weight: 3, dash: '2 7', curve: 0.06 },
 };
 
+interface ThreadEntry {
+  line: L.Polyline;
+  from: LatLngTuple;
+  to: LatLngTuple;
+}
+
 /** Карта с нитями маршрута: Leaflet + OpenStreetMap, зум до домов (z19). */
 export class MapScene {
   readonly map: L.Map;
   private readonly markersLayer = L.layerGroup();
   private readonly threadsLayer = L.layerGroup();
   private readonly markers = new Map<string, L.Marker>();
+  private readonly threads = new Map<string, ThreadEntry>();
   private readonly resizeObserver: ResizeObserver;
   private invalidateTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     container: HTMLElement,
     private readonly handlers: MapSceneHandlers,
+    private readonly routing: RoutingService,
   ) {
     this.map = L.map(container, {
       center: [35, 90],
@@ -118,20 +127,71 @@ export class MapScene {
   }
 
   private renderThreads(waypoints: Waypoint[], segments: { type: TransportType }[]): void {
-    this.threadsLayer.clearLayers();
+    const seen = new Set<string>();
     for (let i = 0; i < waypoints.length - 1; i++) {
-      const style = THREAD_STYLES[segments[i]?.type ?? 'flight'];
-      const path = curvedPath(waypoints[i], waypoints[i + 1], style.curve);
-      L.polyline(path, {
-        color: style.color,
-        weight: style.weight,
-        opacity: 0.85,
-        dashArray: style.dash,
-        lineCap: 'round',
-        lineJoin: 'round',
-        className: style.flow ? 'thread-flow' : undefined,
-      }).addTo(this.threadsLayer);
+      const seg = segments[i];
+      if (!seg) {
+        continue;
+      }
+      const from = waypoints[i];
+      const to = waypoints[i + 1];
+      const style = THREAD_STYLES[seg.type];
+      const key = `${from.id}>${to.id}:${seg.type}`;
+      seen.add(key);
+
+      const fromTuple: LatLngTuple = [from.lat, from.lng];
+      const toTuple: LatLngTuple = [to.lat, to.lng];
+      const existing = this.threads.get(key);
+      if (existing) {
+        if (samePoint(existing.from, fromTuple) && samePoint(existing.to, toTuple)) {
+          continue; // нить актуальна
+        }
+        // Точку перетащили — нить перерисуется (и маршрут пересчитается).
+        this.threadsLayer.removeLayer(existing.line);
+        this.threads.delete(key);
+      }
+
+      // Сначала рисуем дугу, для дорожных типов она заменится реальным маршрутом.
+      this.drawThread(key, curvedPath(from, to, style.curve), fromTuple, toTuple, style);
+      if (this.routing.isRoutable(seg.type)) {
+        const rkey = this.routing.key(seg.type, from, to);
+        void this.routing.route(rkey, from, to, seg.type).then((result) => {
+          if (!result || !this.threads.has(key)) {
+            return; // роутинг не удался или нить уже неактуальна
+          }
+          const old = this.threads.get(key)!;
+          this.threadsLayer.removeLayer(old.line);
+          this.drawThread(key, result.path, fromTuple, toTuple, style);
+        });
+      }
     }
+
+    for (const [key, entry] of this.threads) {
+      if (!seen.has(key)) {
+        this.threadsLayer.removeLayer(entry.line);
+        this.threads.delete(key);
+      }
+    }
+  }
+
+  private drawThread(
+    key: string,
+    path: LatLngTuple[],
+    from: LatLngTuple,
+    to: LatLngTuple,
+    style: ThreadStyle,
+  ): void {
+    const line = L.polyline(path, {
+      color: style.color,
+      weight: style.weight,
+      opacity: 0.85,
+      dashArray: style.dash,
+      lineCap: 'round',
+      lineJoin: 'round',
+      className: style.flow ? 'thread-flow' : undefined,
+    });
+    line.addTo(this.threadsLayer);
+    this.threads.set(key, { line, from, to });
   }
 
   private icon(index: number, selected: boolean): L.DivIcon {
@@ -169,4 +229,9 @@ export class MapScene {
     }
     this.map.remove();
   }
+}
+
+/** Сравнение координат с допуском ~10 см. */
+function samePoint(a: LatLngTuple, b: LatLngTuple): boolean {
+  return Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6;
 }

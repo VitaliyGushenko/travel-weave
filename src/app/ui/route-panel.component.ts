@@ -7,6 +7,7 @@ import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 import { TRANSPORT_LABELS, TransportType, Waypoint } from '../core/models';
 import { distanceKm } from '../core/geo';
+import { RoutingService } from '../core/routing.service';
 import { StorageService } from '../core/storage.service';
 import { AuthService } from '../core/auth.service';
 import { TripStore } from '../core/trip.store';
@@ -396,6 +397,7 @@ export class RoutePanelComponent {
   readonly store = inject(TripStore);
   private readonly storage = inject(StorageService);
   private readonly auth = inject(AuthService);
+  private readonly routing = inject(RoutingService);
 
   readonly labels = TRANSPORT_LABELS;
   readonly icons = TRANSPORT_ICONS;
@@ -468,14 +470,20 @@ export class RoutePanelComponent {
     }
   }
 
+  /** Расстояние нити: дорожное — если роутинг уже посчитал, иначе по прямой. */
   segmentKm(index: number): number {
+    // Трекаем версию роутинга — расстояния обновятся, когда маршрут посчитается.
+    this.routing.version();
     const wps = this.store.waypoints();
     const a = wps[index];
     const b = wps[index + 1];
     if (!a || !b) {
       return 0;
     }
-    return distanceKm(a, b);
+    const type = this.store.segments()[index]?.type ?? 'flight';
+    const key = this.routing.key(type, a, b);
+    const routed = this.routing.cached(key)?.distanceKm;
+    return routed ?? distanceKm(a, b);
   }
 
   /** Загрузка фото точки: компрессия на canvas → Supabase → ссылка в документ. */

@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 
 import { reverseGeocode } from '../core/geocode';
+import { RoutingService } from '../core/routing.service';
 import { TripStore } from '../core/trip.store';
 import { MapScene } from './map-scene';
 
@@ -34,6 +35,7 @@ import { MapScene } from './map-scene';
 export class MapComponent implements AfterViewInit, OnDestroy {
   private readonly zone = inject(NgZone);
   private readonly store = inject(TripStore);
+  private readonly routing = inject(RoutingService);
   private readonly hostRef = viewChild.required<ElementRef<HTMLDivElement>>('host');
 
   private scene?: MapScene;
@@ -84,16 +86,20 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     // Эффекты могли отработать до создания сцены — возвращаем её и рисуем текущий маршрут сами.
     const scene = this.zone.runOutsideAngular(
       () =>
-        new MapScene(host, {
-          onClick: (lat, lng) => this.zone.run(() => void this.addPointAt(lat, lng)),
-          onSelect: (index) =>
-            this.zone.run(() => {
-              this.markerClickIndex = index;
-              this.store.select(index);
-            }),
-          onMove: (id, lat, lng) =>
-            this.zone.run(() => this.store.updateWaypoint(id, { lat, lng })),
-        }),
+        new MapScene(
+          host,
+          {
+            onClick: (lat, lng) => this.zone.run(() => void this.addPointAt(lat, lng)),
+            onSelect: (index) =>
+              this.zone.run(() => {
+                this.markerClickIndex = index;
+                this.store.select(index);
+              }),
+            onMove: (id, lat, lng) =>
+              this.zone.run(() => this.store.updateWaypoint(id, { lat, lng })),
+          },
+          this.routing,
+        ),
     );
     this.scene = scene;
 
