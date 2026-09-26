@@ -9,10 +9,8 @@ import { newSegment, newWaypoint } from './trips.service';
 @Injectable({ providedIn: 'root' })
 export class TripStore {
   readonly trip = signal<Trip | null>(null);
-  /** Индекс выбранной точки (для карточки и fly-to). */
+  /** Индекс выбранной точки (для карточки и подлёта камеры). */
   readonly selectedIndex = signal<number | null>(null);
-  /** Режим добавления точек кликом по глобусу. */
-  readonly addMode = signal(false);
   /** Несохранённые изменения (для автосохранения). */
   readonly dirty = signal(false);
 
@@ -38,10 +36,6 @@ export class TripStore {
 
   markClean(): void {
     this.dirty.set(false);
-  }
-
-  toggleAddMode(on?: boolean): void {
-    this.addMode.set(on ?? !this.addMode());
   }
 
   select(index: number | null): void {

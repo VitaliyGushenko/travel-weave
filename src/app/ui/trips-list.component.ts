@@ -70,8 +70,10 @@ import { Trip } from '../core/models';
       z-index: 90;
       display: grid;
       place-items: center;
-      background: radial-gradient(ellipse 90% 70% at 50% -10%, rgba(59, 40, 110, 0.5), transparent 60%),
-        var(--bg-deep);
+      background:
+        radial-gradient(ellipse 90% 60% at 50% -10%, rgba(124, 92, 214, 0.14), transparent 60%),
+        radial-gradient(ellipse 80% 60% at 80% 110%, rgba(14, 148, 136, 0.12), transparent 55%),
+        var(--bg);
     }
     .card {
       width: 400px;
@@ -79,10 +81,9 @@ import { Trip } from '../core/models';
       overflow-y: auto;
       padding: 28px;
       background: var(--bg-panel);
-      border: 1px solid rgba(63, 216, 199, 0.2);
+      border: 1px solid var(--border);
       border-radius: 22px;
-      backdrop-filter: blur(14px);
-      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 20px 60px rgba(20, 50, 80, 0.18);
       display: flex;
       flex-direction: column;
       gap: 14px;
@@ -127,9 +128,9 @@ import { Trip } from '../core/models';
     li {
       position: relative;
       padding: 12px 40px 12px 14px;
-      border: 1px solid rgba(63, 216, 199, 0.18);
+      border: 1px solid var(--border);
       border-radius: 12px;
-      background: rgba(5, 12, 28, 0.55);
+      background: rgba(255, 255, 255, 0.75);
       cursor: pointer;
       transition: border-color 0.2s;
       &:hover {
@@ -169,8 +170,7 @@ import { Trip } from '../core/models';
     }
   `,
 })
-export class TripsListComponent {
-  readonly auth = inject(AuthService);
+export class TripsListComponent {  readonly auth = inject(AuthService);
   private readonly tripsService = inject(TripsService);
 
   /** Список поездок пользователя (undefined = ещё грузится). */

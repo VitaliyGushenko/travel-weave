@@ -55,24 +55,24 @@ function render(size) {
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const i = (y * size + x) * 4;
-      // фон: тёмно-синий градиент
+      // фон: светлый градиент
       const t = y / size;
-      let rr = Math.round(5 + 10 * t);
-      let gg = Math.round(10 + 8 * t);
-      let bb = Math.round(26 + 24 * t);
+      let rr = Math.round(244 - 10 * t);
+      let gg = Math.round(247 - 6 * t);
+      let bb = Math.round(251 - 3 * t);
       // глобус
       const d = Math.hypot(x - cx, y - cy);
       if (d < r) {
-        rr = 63; gg = 216; bb = 199; // teal
-        // лёгкая тень по краю
+        rr = 14; gg = 148; bb = 136; // teal
+        // блик слева-сверху
         const edge = d / r;
         if (edge > 0.75) { rr = Math.round(rr * (1 - (edge - 0.75) * 2)); gg = Math.round(gg * (1 - (edge - 0.75) * 2)); bb = Math.round(bb * (1 - (edge - 0.75) * 2)); }
       }
       // золотая дуга-орбита
       const orbit = Math.abs(Math.hypot(x - cx, y - cy) - r2);
       const angle = Math.atan2(y - cy, x - cx);
-      if (orbit < size * 0.02 && angle > -0.6 && angle < 2.2) {
-        rr = 242; gg = 182; bb = 76; // gold
+      if (orbit < size * 0.022 && angle > -0.6 && angle < 2.2) {
+        rr = 217; gg = 144; bb = 42; // gold
       }
       buf[i] = rr; buf[i + 1] = gg; buf[i + 2] = bb; buf[i + 3] = 255;
     }

@@ -3,7 +3,7 @@ import { Component, effect, inject, signal } from '@angular/core';
 import { AuthService } from './core/auth.service';
 import { TripStore } from './core/trip.store';
 import { TripsService } from './core/trips.service';
-import { GlobeComponent } from './globe/globe.component';
+import { MapComponent } from './map/map.component';
 import { AuthScreenComponent } from './ui/auth-screen.component';
 import { BudgetPanelComponent } from './ui/budget-panel.component';
 import { RoutePanelComponent } from './ui/route-panel.component';
@@ -14,7 +14,7 @@ import { TripsListComponent } from './ui/trips-list.component';
   selector: 'app-root',
   standalone: true,
   imports: [
-    GlobeComponent,
+    MapComponent,
     RoutePanelComponent,
     TimelineComponent,
     BudgetPanelComponent,
@@ -33,18 +33,16 @@ import { TripsListComponent } from './ui/trips-list.component';
       <app-trips-list (openTrip)="openTrip($event)" />
     } @else {
       @defer (on immediate) {
-        <app-globe />
+        <app-map />
       } @placeholder {
-        <div class="globe-placeholder"></div>
+        <div class="map-placeholder"></div>
       }
       @defer (on immediate) {
         <app-route-panel />
         <app-budget-panel />
         <app-timeline />
       }
-      @if (store.addMode()) {
-        <div class="add-mode-banner">Кликните по глобусу, чтобы сплести новую точку маршрута</div>
-      }
+      <div class="map-hint">Клик по карте — новая точка маршрута</div>
       @if (store.dirty()) {
         <div class="save-dot" title="Есть несохранённые изменения">●</div>
       }
@@ -71,26 +69,25 @@ import { TripsListComponent } from './ui/trips-list.component';
         font-size: 13px;
       }
     }
-    .globe-placeholder {
+    .map-placeholder {
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at 50% 55%, rgba(63, 216, 199, 0.12), transparent 45%);
+      background: var(--bg);
     }
-    .add-mode-banner {
+    .map-hint {
       position: absolute;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 20;
-      padding: 8px 18px;
+      bottom: 14px;
+      left: 352px;
+      z-index: 9;
+      padding: 7px 16px;
       border-radius: 999px;
-      background: rgba(63, 216, 199, 0.16);
-      border: 1px solid rgba(63, 216, 199, 0.45);
-      color: #a9ede2;
-      font-size: 13px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 12.5px;
       font-weight: 600;
-      backdrop-filter: blur(8px);
-      animation: banner-in 0.3s ease;
+      box-shadow: 0 2px 12px rgba(20, 50, 80, 0.1);
+      pointer-events: none;
     }
     .save-dot {
       position: absolute;
@@ -104,29 +101,19 @@ import { TripsListComponent } from './ui/trips-list.component';
     .back-btn {
       position: absolute;
       bottom: 16px;
-      right: 16px;
+      right: 60px;
       z-index: 12;
       padding: 7px 14px;
       border-radius: 999px;
-      border: 1px solid rgba(63, 216, 199, 0.3);
+      border: 1px solid var(--border);
       background: var(--bg-panel);
-      color: #a9ede2;
+      color: var(--teal);
       font-size: 12.5px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      backdrop-filter: blur(8px);
+      box-shadow: 0 2px 12px rgba(20, 50, 80, 0.12);
       &:hover {
         border-color: var(--teal);
-      }
-    }
-    @keyframes banner-in {
-      from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(-8px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
       }
     }
     @keyframes pulse {

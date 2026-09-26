@@ -1,16 +1,17 @@
-/* Travel Weave — «космический атлас» */
+/* Travel Weave — светлая тема «бумажного атласа» */
 
 :root {
-  --bg-deep: #050a1a;
-  --bg-panel: rgba(9, 17, 38, 0.78);
-  --teal: #3fd8c7;
-  --teal-soft: rgba(63, 216, 199, 0.25);
-  --gold: #f2b64c;
-  --gold-soft: rgba(242, 182, 76, 0.2);
-  --violet: #9b7bff;
-  --text: #e8eefc;
-  --text-dim: #8fa0c4;
-  --danger: #ff7a7a;
+  --bg: #eef3f8;
+  --bg-panel: rgba(255, 255, 255, 0.93);
+  --border: rgba(22, 60, 90, 0.14);
+  --teal: #0e9488;
+  --teal-soft: rgba(14, 148, 136, 0.12);
+  --gold: #d9902a;
+  --gold-soft: rgba(217, 144, 42, 0.14);
+  --violet: #7c5cd6;
+  --text: #1b2a3a;
+  --text-dim: #5b7186;
+  --danger: #d64545;
   --font-display: 'Unbounded', system-ui, sans-serif;
   --font-body: 'Manrope', system-ui, sans-serif;
 }
@@ -23,10 +24,7 @@ body {
 }
 
 body {
-  background:
-    radial-gradient(ellipse 120% 90% at 70% -10%, rgba(59, 40, 110, 0.35), transparent 60%),
-    radial-gradient(ellipse 100% 80% at 10% 110%, rgba(20, 70, 90, 0.3), transparent 55%),
-    var(--bg-deep);
+  background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
   font-size: 14px;
@@ -49,20 +47,20 @@ button {
   height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(63, 216, 199, 0.25);
+  background: rgba(22, 60, 90, 0.18);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-/* Общие элементы управления в стиле атласа */
+/* Общие элементы управления */
 input,
 select,
 textarea {
   font-family: var(--font-body);
-  background: rgba(5, 12, 28, 0.7);
-  border: 1px solid rgba(63, 216, 199, 0.22);
+  background: #fff;
+  border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text);
   padding: 7px 10px;
@@ -71,5 +69,45 @@ textarea {
 
   &:focus {
     border-color: var(--teal);
+  }
+}
+
+/* ---------- Маркеры маршрута на карте ---------- */
+.wp-marker-wrap {
+  background: none;
+  border: none;
+}
+
+.wp-marker {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2.5px solid var(--teal);
+  color: var(--teal);
+  font-weight: 800;
+  font-size: 13px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 2px 8px rgba(20, 50, 80, 0.3);
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
+
+  &.selected {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #fff;
+    transform: scale(1.18);
+    box-shadow: 0 0 0 6px var(--gold-soft), 0 2px 8px rgba(20, 50, 80, 0.3);
+  }
+}
+
+/* Бегущие точки вдоль перелётов */
+.thread-flow {
+  animation: thread-flow 1.4s linear infinite;
+}
+
+@keyframes thread-flow {
+  to {
+    stroke-dashoffset: -12;
   }
 }

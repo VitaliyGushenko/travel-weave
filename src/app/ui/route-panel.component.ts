@@ -41,14 +41,6 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
           [ngModel]="store.trip()?.title"
           (ngModelChange)="store.setMeta({ title: $event })"
         />
-        <button
-          type="button"
-          class="add-btn"
-          [class.active]="store.addMode()"
-          (click)="store.toggleAddMode()"
-        >
-          {{ store.addMode() ? 'Кликай по глобусу…' : '＋ Точка на глобусе' }}
-        </button>
       </header>
 
       <div class="search">
@@ -201,10 +193,9 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
       display: flex;
       flex-direction: column;
       background: var(--bg-panel);
-      border: 1px solid rgba(63, 216, 199, 0.18);
+      border: 1px solid var(--border);
       border-radius: 18px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 6px 28px rgba(20, 50, 80, 0.12);
       overflow: hidden;
       pointer-events: auto;
     }
@@ -213,7 +204,7 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
       display: flex;
       flex-direction: column;
       gap: 10px;
-      border-bottom: 1px solid rgba(63, 216, 199, 0.12);
+      border-bottom: 1px solid var(--border);
     }
     .brand {
       font-family: var(--font-display);
@@ -223,24 +214,6 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
     }
     .trip-title {
       font-weight: 600;
-    }
-    .add-btn {
-      padding: 9px 12px;
-      border-radius: 10px;
-      border: 1px solid var(--gold-soft);
-      background: var(--gold-soft);
-      color: #f2d9a0;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-      &:hover {
-        background: rgba(242, 182, 76, 0.32);
-      }
-      &.active {
-        border-color: var(--teal);
-        background: rgba(63, 216, 199, 0.18);
-        color: #a9ede2;
-      }
     }
     .search {
       position: relative;
@@ -258,11 +231,12 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
       margin: 4px 0 0;
       padding: 4px;
       list-style: none;
-      background: rgba(8, 16, 36, 0.97);
-      border: 1px solid rgba(63, 216, 199, 0.25);
+      background: #fff;
+      border: 1px solid var(--border);
       border-radius: 10px;
       max-height: 220px;
       overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(20, 50, 80, 0.16);
       li {
         padding: 8px 10px;
         border-radius: 8px;
@@ -271,7 +245,7 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
         justify-content: space-between;
         gap: 8px;
         &:hover {
-          background: rgba(63, 216, 199, 0.12);
+          background: var(--teal-soft);
         }
         .r-name {
           font-weight: 600;
@@ -288,14 +262,14 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
       padding: 8px 14px 14px;
     }
     .waypoint {
-      border: 1px solid rgba(63, 216, 199, 0.16);
+      border: 1px solid var(--border);
       border-radius: 12px;
       margin: 6px 0;
-      background: rgba(5, 12, 28, 0.55);
+      background: rgba(255, 255, 255, 0.75);
       cursor: pointer;
       transition: border-color 0.2s;
       &:hover {
-        border-color: rgba(63, 216, 199, 0.45);
+        border-color: rgba(14, 148, 136, 0.55);
       }
       &.selected {
         border-color: var(--gold);
@@ -313,7 +287,7 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
       height: 22px;
       border-radius: 50%;
       background: var(--teal-soft);
-      color: #a9ede2;
+      color: var(--teal);
       font-size: 12px;
       font-weight: 700;
       display: grid;
@@ -333,7 +307,7 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
       border-radius: 6px;
       &:hover {
         color: var(--danger);
-        background: rgba(255, 122, 122, 0.1);
+        background: rgba(214, 69, 69, 0.08);
       }
     }
     .wp-body {
@@ -370,13 +344,13 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
         height: 110px;
         object-fit: cover;
         border-radius: 10px;
-        border: 1px solid rgba(63, 216, 199, 0.25);
+        border: 1px solid var(--border);
       }
       .photo-add {
         width: 100%;
         text-align: center;
         padding: 10px;
-        border: 1px dashed rgba(63, 216, 199, 0.35);
+        border: 1px dashed rgba(14, 148, 136, 0.45);
         border-radius: 10px;
         color: var(--text-dim);
         font-size: 12.5px;
@@ -384,7 +358,7 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
         transition: border-color 0.2s, color 0.2s;
         &:hover {
           border-color: var(--teal);
-          color: #a9ede2;
+          color: var(--teal);
         }
       }
     }

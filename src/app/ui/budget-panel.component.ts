@@ -41,7 +41,7 @@ const CURRENCIES = ['RUB', 'USD', 'EUR', 'THB', 'JPY', 'GBP'];
         </div>
 
         <svg class="spark" viewBox="0 0 220 48" preserveAspectRatio="none">
-          <polyline [attr.points]="sparkPoints()" fill="none" stroke="#f2b64c" stroke-width="2"
+          <polyline [attr.points]="sparkPoints()" fill="none" stroke="#d9902a" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round" />
         </svg>
         <div class="spark-hint">расходы по дням</div>
@@ -70,10 +70,9 @@ const CURRENCIES = ['RUB', 'USD', 'EUR', 'THB', 'JPY', 'GBP'];
     }
     .panel {
       background: var(--bg-panel);
-      border: 1px solid rgba(63, 216, 199, 0.18);
+      border: 1px solid var(--border);
       border-radius: 18px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 6px 28px rgba(20, 50, 80, 0.12);
       padding: 14px 16px;
       display: flex;
       flex-direction: column;
@@ -131,7 +130,7 @@ const CURRENCIES = ['RUB', 'USD', 'EUR', 'THB', 'JPY', 'GBP'];
       }
       .bar {
         grid-column: 1 / -1;
-        background: rgba(255, 255, 255, 0.06);
+        background: rgba(22, 60, 90, 0.08);
         border-radius: 2px;
         height: 4px;
         overflow: hidden;

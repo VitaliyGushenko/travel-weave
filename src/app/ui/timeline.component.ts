@@ -62,10 +62,9 @@ interface DayCol {
     .timeline {
       pointer-events: auto;
       background: var(--bg-panel);
-      border: 1px solid rgba(63, 216, 199, 0.18);
+      border: 1px solid var(--border);
       border-radius: 16px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 6px 28px rgba(20, 50, 80, 0.12);
       padding: 10px 12px;
       overflow-x: auto;
     }
@@ -82,9 +81,9 @@ interface DayCol {
     }
     .block {
       grid-row: 1;
-      background: linear-gradient(135deg, rgba(63, 216, 199, 0.28), rgba(63, 216, 199, 0.12));
-      border: 1px solid rgba(63, 216, 199, 0.4);
-      color: #c8f4ec;
+      background: var(--teal-soft);
+      border: 1px solid rgba(14, 148, 136, 0.45);
+      color: #0b6b62;
       border-radius: 8px;
       font-size: 11px;
       font-weight: 700;
@@ -99,7 +98,8 @@ interface DayCol {
       }
       &.selected {
         border-color: var(--gold);
-        color: #ffe9b0;
+        background: var(--gold-soft);
+        color: #9c6210;
       }
     }
     .day {
@@ -113,7 +113,7 @@ interface DayCol {
       cursor: pointer;
       border: 1px solid transparent;
       &:hover {
-        border-color: rgba(63, 216, 199, 0.3);
+        border-color: rgba(14, 148, 136, 0.4);
       }
       .d-date {
         font-size: 10px;
@@ -127,7 +127,7 @@ interface DayCol {
         white-space: nowrap;
       }
       &.filled {
-        background: rgba(242, 182, 76, 0.06);
+        background: var(--gold-soft);
       }
     }
   `,

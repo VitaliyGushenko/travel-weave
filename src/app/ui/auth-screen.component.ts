@@ -81,16 +81,18 @@ const ERROR_MESSAGES: Record<string, string> = {
       z-index: 100;
       display: grid;
       place-items: center;
-      background: radial-gradient(ellipse 90% 70% at 50% -10%, rgba(59, 40, 110, 0.5), transparent 60%), var(--bg-deep);
+      background:
+        radial-gradient(ellipse 90% 60% at 50% -10%, rgba(124, 92, 214, 0.14), transparent 60%),
+        radial-gradient(ellipse 80% 60% at 80% 110%, rgba(14, 148, 136, 0.12), transparent 55%),
+        var(--bg);
     }
     .card {
       width: 340px;
       padding: 30px 28px;
       background: var(--bg-panel);
-      border: 1px solid rgba(63, 216, 199, 0.2);
+      border: 1px solid var(--border);
       border-radius: 22px;
-      backdrop-filter: blur(14px);
-      box-shadow: 0 20px 70px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 20px 60px rgba(20, 50, 80, 0.18);
       display: flex;
       flex-direction: column;
       gap: 14px;
@@ -123,7 +125,7 @@ const ERROR_MESSAGES: Record<string, string> = {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px;
-      background: rgba(5, 12, 28, 0.6);
+      background: rgba(22, 60, 90, 0.06);
       border-radius: 10px;
       padding: 4px;
       button {
@@ -136,7 +138,7 @@ const ERROR_MESSAGES: Record<string, string> = {
         font-weight: 600;
         &.active {
           background: var(--teal-soft);
-          color: #a9ede2;
+          color: var(--teal);
         }
       }
     }
@@ -152,8 +154,8 @@ const ERROR_MESSAGES: Record<string, string> = {
     .error {
       color: var(--danger);
       font-size: 12.5px;
-      background: rgba(255, 122, 122, 0.08);
-      border: 1px solid rgba(255, 122, 122, 0.3);
+      background: rgba(214, 69, 69, 0.07);
+      border: 1px solid rgba(214, 69, 69, 0.3);
       border-radius: 8px;
       padding: 8px 10px;
     }
@@ -161,8 +163,8 @@ const ERROR_MESSAGES: Record<string, string> = {
       padding: 11px;
       border-radius: 10px;
       border: none;
-      background: linear-gradient(135deg, #3fd8c7, #2aa79b);
-      color: #04231f;
+      background: linear-gradient(135deg, #14b8a6, #0e9488);
+      color: #fff;
       font-weight: 800;
       cursor: pointer;
       &:disabled {
@@ -172,13 +174,13 @@ const ERROR_MESSAGES: Record<string, string> = {
     .google {
       padding: 11px;
       border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      background: #fff;
       color: var(--text);
       font-weight: 600;
       cursor: pointer;
       &:hover {
-        background: rgba(255, 255, 255, 0.12);
+        background: var(--teal-soft);
       }
     }
     .divider {

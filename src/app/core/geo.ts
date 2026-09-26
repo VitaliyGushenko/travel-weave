@@ -1,70 +1,11 @@
-import { Vector3 } from 'three';
-
-export const EARTH_RADIUS_KM = 6371;
+import { EARTH_RADIUS_KM } from './geo-const';
 
 export interface LatLng {
   lat: number;
   lng: number;
 }
 
-/**
- * Перевод географических координат в позицию на сфере Three.js.
- * Соответствует стандартной развёртке текстуры на SphereGeometry.
- */
-export function latLngToVec3(lat: number, lng: number, radius = 1): Vector3 {
-  const phi = ((90 - lat) * Math.PI) / 180;
-  const theta = ((lng + 180) * Math.PI) / 180;
-  return new Vector3(
-    -radius * Math.sin(phi) * Math.cos(theta),
-    radius * Math.cos(phi),
-    radius * Math.sin(phi) * Math.sin(theta),
-  );
-}
-
-/** Обратное преобразование точки на сфере в широту/долготу. */
-export function vec3ToLatLng(v: Vector3): LatLng {
-  const r = v.length();
-  const lat = 90 - (Math.acos(v.y / r) * 180) / Math.PI;
-  let lng = (Math.atan2(v.z, -v.x) * 180) / Math.PI - 180;
-  if (lng < -180) {
-    lng += 360;
-  }
-  if (lng > 180) {
-    lng -= 360;
-  }
-  return { lat, lng };
-}
-
-/**
- * Дуга большого круга между двумя точками, поднятая над поверхностью.
- * Высота растёт по параболе и достигает максимума в середине дуги.
- */
-export function greatCirclePoints(
-  from: LatLng,
-  to: LatLng,
-  segments = 64,
-  altitude = 0.22,
-): Vector3[] {
-  const start = latLngToVec3(from.lat, from.lng, 1);
-  const end = latLngToVec3(to.lat, to.lng, 1);
-  const angle = start.angleTo(end);
-  const points: Vector3[] = [];
-
-  for (let i = 0; i <= segments; i++) {
-    const t = i / segments;
-    let v: Vector3;
-    if (angle < 0.001) {
-      v = start.clone().lerp(end, t);
-    } else {
-      const sinA = Math.sin((1 - t) * angle) / Math.sin(angle);
-      const sinB = Math.sin(t * angle) / Math.sin(angle);
-      v = start.clone().multiplyScalar(sinA).add(end.clone().multiplyScalar(sinB));
-    }
-    const h = 1 + altitude * Math.sin(Math.PI * t);
-    points.push(v.normalize().multiplyScalar(h));
-  }
-  return points;
-}
+export type LatLngTuple = [number, number];
 
 /** Расстояние по большому кругу, км. */
 export function distanceKm(a: LatLng, b: LatLng): number {
@@ -75,4 +16,32 @@ export function distanceKm(a: LatLng, b: LatLng): number {
     Math.sin(dLat / 2) ** 2 +
     Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
   return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(h));
+}
+
+/**
+ * Изогнутый путь между точками для нити на 2D-карте: квадратичная кривая
+ * с отклонением контрольной точки перпендикулярно линии. Чем длиннее нить,
+ * тем заметнее изгиб (с потолком), чтобы соседние дуги читались.
+ */
+export function curvedPath(from: LatLng, to: LatLng, bend = 0.18, samples = 40): LatLngTuple[] {
+  const points: LatLngTuple[] = [];
+  const dLat = to.lat - from.lat;
+  const dLng = to.lng - from.lng;
+  // Перпендикуляр в градусах; для долготы учитываем сжатие к полюсам.
+  const latScale = Math.cos((((from.lat + to.lat) / 2) * Math.PI) / 180) || 0.2;
+  const midLat = from.lat + dLat / 2;
+  const midLng = from.lng + dLng / 2;
+  const distDeg = Math.hypot(dLat, dLng * latScale);
+  const offset = Math.min(distDeg * bend, 12);
+  const ctrlLat = midLat - (dLng * latScale) / (distDeg || 1) * offset;
+  const ctrlLng = midLng + dLat / (distDeg || 1) * offset;
+
+  for (let i = 0; i <= samples; i++) {
+    const t = i / samples;
+    const mt = 1 - t;
+    const lat = mt * mt * from.lat + 2 * mt * t * ctrlLat + t * t * to.lat;
+    const lng = mt * mt * from.lng + 2 * mt * t * ctrlLng + t * t * to.lng;
+    points.push([lat, lng]);
+  }
+  return points;
 }
