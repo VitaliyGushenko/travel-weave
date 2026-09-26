@@ -128,7 +128,7 @@ export class AuthService {
       await setDoc(ref, {
         email: user.email ?? '',
         displayName: user.displayName ?? '',
-        settings: { currency: 'RUB' },
+        settings: { currency: 'BYN' },
         createdAt: serverTimestamp(),
       });
     }

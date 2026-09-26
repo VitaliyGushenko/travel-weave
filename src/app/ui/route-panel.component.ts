@@ -104,7 +104,14 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
           >
             <div class="wp-head">
               <span class="wp-num">{{ i + 1 }}</span>
-              <span class="wp-name">{{ wp.name }}</span>
+              <input
+                class="wp-name"
+                placeholder="Название точки"
+                [ngModel]="wp.name"
+                (ngModelChange)="store.updateWaypoint(wp.id, { name: $event })"
+                (click)="$event.stopPropagation()"
+                (keydown.enter)="$any($event.target).blur()"
+              />
               <button
                 type="button"
                 class="icon-btn"
@@ -298,6 +305,24 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
     .wp-name {
       flex: 1;
       font-weight: 600;
+      font-size: 14px;
+      background: none;
+      border: none;
+      border-bottom: 1px dashed transparent;
+      border-radius: 0;
+      padding: 2px 0;
+      color: var(--text);
+      &:hover {
+        border-bottom-color: var(--border);
+      }
+      &:focus {
+        border-bottom-color: var(--teal);
+        outline: none;
+      }
+      &::placeholder {
+        color: var(--text-dim);
+        font-weight: 400;
+      }
     }
     .icon-btn {
       border: none;
@@ -317,6 +342,17 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
       flex-direction: column;
       gap: 8px;
       cursor: default;
+      // Инпуты не должны распирать карточку своей собственной шириной.
+      input,
+      textarea {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 48px;
+      }
       label {
         display: flex;
         flex-direction: column;
@@ -331,6 +367,9 @@ const TRANSPORT_ICONS: Record<TransportType, string> = {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px;
+      input {
+        min-width: 0;
+      }
     }
     .hint {
       font-size: 11px;

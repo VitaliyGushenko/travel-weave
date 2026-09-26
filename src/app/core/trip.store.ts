@@ -1,6 +1,10 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { RouteSegment, Trip, Waypoint } from './models';
+import { distanceKm } from './geo';
 import { newSegment, newWaypoint } from './trips.service';
+
+/** Ближе этого расстояния новая нить по умолчанию — на авто, дальше — перелёт. */
+const CAR_DISTANCE_KM = 120;
 
 /**
  * Центральное состояние маршрута. Глобус, таймлайн, бюджет и карточки
@@ -42,7 +46,7 @@ export class TripStore {
     this.selectedIndex.set(index);
   }
 
-  /** Добавление точки: если в маршруте уже есть точки — между последней и новой появляется нить. */
+  /** Добавление точки: тип новой нити — авто для близких точек, перелёт для дальних. */
   addPoint(lat: number, lng: number, name: string, country?: string): Waypoint {
     const trip = this.trip();
     if (!trip) {
@@ -52,7 +56,8 @@ export class TripStore {
     const waypoints = [...trip.waypoints, wp];
     const segments = [...trip.segments];
     if (waypoints.length > 1) {
-      segments.push(newSegment('flight'));
+      const prev = waypoints[waypoints.length - 2];
+      segments.push(newSegment(defaultType(prev, wp)));
     }
     this.commit(trip, waypoints, segments);
     return wp;
@@ -135,7 +140,7 @@ export class TripStore {
     const segments: RouteSegment[] = [];
     for (let i = 0; i < newWps.length - 1; i++) {
       const existing = byPair.get(pairKey(newWps[i], newWps[i + 1]));
-      segments.push(existing ?? newSegment());
+      segments.push(existing ?? newSegment(defaultType(newWps[i], newWps[i + 1])));
     }
     return segments;
   }
@@ -143,4 +148,8 @@ export class TripStore {
 
 function pairKey(a: Waypoint, b: Waypoint): string {
   return `${a.id}->${b.id}`;
+}
+
+function defaultType(a: Waypoint, b: Waypoint): RouteSegment['type'] {
+  return distanceKm(a, b) <= CAR_DISTANCE_KM ? 'car' : 'flight';
 }

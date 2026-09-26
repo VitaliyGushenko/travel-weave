@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { BudgetService, categoryTotals } from '../core/budget.service';
 import { TripStore } from '../core/trip.store';
 
-const CURRENCIES = ['RUB', 'USD', 'EUR', 'THB', 'JPY', 'GBP'];
+const CURRENCIES = ['BYN', 'RUB', 'USD'];
 
 @Component({
   selector: 'app-budget-panel',

@@ -48,7 +48,7 @@ export class TripsService {
     });
   }
 
-  async createTrip(uid: string, title: string, currency = 'RUB'): Promise<string> {
+  async createTrip(uid: string, title: string, currency = 'BYN'): Promise<string> {
     const ref = await addDoc(collection(this.firestore, 'trips'), {
       ownerId: uid,
       title: title.trim() || 'Новое путешествие',

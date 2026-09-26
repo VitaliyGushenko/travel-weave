@@ -98,11 +98,11 @@ export class MapScene {
       const existing = this.markers.get(wp.id);
       if (existing) {
         existing.setLatLng([wp.lat, wp.lng]);
-        existing.setIcon(this.icon(index, selected));
+        existing.setIcon(this.icon(index, selected, wp.name));
         continue;
       }
       const marker = L.marker([wp.lat, wp.lng], {
-        icon: this.icon(index, selected),
+        icon: this.icon(index, selected, wp.name),
         draggable: true,
         autoPan: true,
       });
@@ -194,10 +194,11 @@ export class MapScene {
     this.threads.set(key, { line, from, to });
   }
 
-  private icon(index: number, selected: boolean): L.DivIcon {
+  private icon(index: number, selected: boolean, name: string): L.DivIcon {
+    const label = name ? `<span class="wp-label">${escapeHtml(name)}</span>` : '';
     return L.divIcon({
       className: 'wp-marker-wrap',
-      html: `<div class="wp-marker${selected ? ' selected' : ''}">${index + 1}</div>`,
+      html: `<div class="wp-marker${selected ? ' selected' : ''}">${index + 1}</div>${label}`,
       iconSize: [30, 30],
       iconAnchor: [15, 15],
     });
@@ -234,4 +235,11 @@ export class MapScene {
 /** Сравнение координат с допуском ~10 см. */
 function samePoint(a: LatLngTuple, b: LatLngTuple): boolean {
   return Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6;
+}
+
+/** Имя точки попадает в HTML иконки — экранируем. */
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c,
+  );
 }
