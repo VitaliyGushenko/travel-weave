@@ -19,6 +19,7 @@
     "@angular/platform-browser": "^19.1.0",
     "@angular/platform-browser-dynamic": "^19.1.0",
     "@angular/router": "^19.1.0",
+    "@angular/service-worker": "^19.2.25",
     "@supabase/supabase-js": "^2.117.2",
     "@types/three": "^0.186.0",
     "firebase": "^11.10.0",

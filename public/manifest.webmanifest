@@ -1,0 +1,24 @@
+{
+  "name": "Travel Weave — плети свои маршруты",
+  "short_name": "Travel Weave",
+  "description": "Планировщик путешествий на интерактивном 3D-глобусе: ставьте точки, плетите нити маршрута и превращайте их в живое путешествие.",
+  "lang": "ru",
+  "theme_color": "#050a1a",
+  "background_color": "#050a1a",
+  "display": "standalone",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
