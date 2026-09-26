@@ -100,10 +100,18 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     const wps = this.store.waypoints();
     scene.render(wps, this.store.segments(), this.store.selectedIndex());
     const trip = this.store.trip();
-    if (trip?.id && wps.length > 1) {
-      this.fittedTripId = trip.id;
-      setTimeout(() => scene.fitRoute(this.store.waypoints()), 60);
-    }
+
+    // Если сцена создалась при нулевом/промежуточном размере контейнера —
+    // пересчитываем сетку плиток, когда контейнер гарантированно устоялся.
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        scene.invalidateSize();
+        if (trip?.id && wps.length > 1) {
+          this.fittedTripId = trip.id;
+          scene.fitRoute(this.store.waypoints());
+        }
+      }),
+    );
   }
 
   ngOnDestroy(): void {

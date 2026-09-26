@@ -31,6 +31,8 @@ export class MapScene {
   private readonly markersLayer = L.layerGroup();
   private readonly threadsLayer = L.layerGroup();
   private readonly markers = new Map<string, L.Marker>();
+  private readonly resizeObserver: ResizeObserver;
+  private invalidateTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     container: HTMLElement,
@@ -40,7 +42,6 @@ export class MapScene {
       center: [35, 90],
       zoom: 4,
       zoomControl: false,
-      worldCopyJump: true,
     });
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -55,6 +56,22 @@ export class MapScene {
     this.map.on('click', (e: L.LeafletMouseEvent) => {
       this.handlers.onClick(e.latlng.lat, e.latlng.lng);
     });
+
+    // Контейнер может менять размер без ресайза окна (подмена defer-плейсхолдера,
+    // догрузка панелей) — Leaflet сам отслеживает только window.resize.
+    this.resizeObserver = new ResizeObserver(() => this.invalidateSize());
+    this.resizeObserver.observe(container);
+  }
+
+  /** Пересчитать размер контейнера и переставить плитки (с дебаунсом). */
+  invalidateSize(): void {
+    if (this.invalidateTimer) {
+      clearTimeout(this.invalidateTimer);
+    }
+    this.invalidateTimer = setTimeout(() => {
+      this.invalidateTimer = null;
+      this.map.invalidateSize({ pan: false });
+    }, 120);
   }
 
   /** Перестраивает маркеры и нити под текущий маршрут. */
@@ -134,6 +151,8 @@ export class MapScene {
     if (waypoints.length === 0) {
       return;
     }
+    // Считаем кадр по актуальному размеру контейнера.
+    this.map.invalidateSize({ pan: false });
     const bounds = L.latLngBounds(waypoints.map((w) => [w.lat, w.lng] as L.LatLngTuple));
     // Учитываем левую панель и нижний таймлайн, чтобы маршрут не прятался под UI.
     this.map.fitBounds(bounds, {
@@ -144,6 +163,10 @@ export class MapScene {
   }
 
   destroy(): void {
+    this.resizeObserver.disconnect();
+    if (this.invalidateTimer) {
+      clearTimeout(this.invalidateTimer);
+    }
     this.map.remove();
   }
 }
